@@ -79,16 +79,16 @@
     <IncludePath>..\libs\json\single_include;..\libs\wxWidgets\lib\vc_x64_dll\mswud;..\libs\wxWidgets\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LibraryPath>..\libs\wxWidgets\lib\vc_x64_lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>..\libs\json\single_include;..\libs\wxWidgets\lib\vc_x64_lib\mswud;..\libs\wxWidgets\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\libs\wxWidgets\lib\vc_x64_dll;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\libs\json\single_include;..\libs\wxWidgets\lib\vc_x64_lib\mswu;..\libs\wxWidgets\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LibraryPath>..\libs\wxWidgets\lib\vc_x64_dll;$(LibraryPath)</LibraryPath>
     <IncludePath>..\libs\json\single_include;..\libs\wxWidgets\lib\vc_x64_dll\mswud;..\libs\wxWidgets\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LibraryPath>..\libs\wxWidgets\lib\vc_x64_lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>..\libs\json\single_include;..\libs\wxWidgets\lib\vc_x64_lib\mswud;..\libs\wxWidgets\include;$(IncludePath)</IncludePath>
+    <LibraryPath>..\libs\wxWidgets\lib\vc_x64_dll;$(LibraryPath)</LibraryPath>
+    <IncludePath>..\libs\json\single_include;..\libs\wxWidgets\lib\vc_x64_lib\mswu;..\libs\wxWidgets\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -119,7 +119,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>wxmsw33ud_core.lib;wxbase33ud.lib;wxpngd.lib;wxjpegd.lib;wxzlibd.lib;wxregexud.lib;wxexpatd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>wxmsw33u_core.lib;wxbase33u.lib;wxpng.lib;wxjpeg.lib;wxzlib.lib;wxregexu.lib;wxexpat.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -151,7 +151,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>wxmsw33ud_core.lib;wxbase33ud.lib;wxpngd.lib;wxjpegd.lib;wxzlibd.lib;wxregexud.lib;wxexpatd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>wxmsw33u_core.lib;wxbase33u.lib;wxpng.lib;wxjpeg.lib;wxzlib.lib;wxregexu.lib;wxexpat.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
