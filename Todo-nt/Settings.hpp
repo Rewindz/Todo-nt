@@ -22,6 +22,7 @@ namespace ToDont
 		bool save();
 
 		void SubmitTheme(TaskTheme theme);
+		void SubmitSound(TaskSound sound);
 
 		TaskSound GetCompleteSound() const { return m_selectedCompleteSound; }
 		void SetCompleteSound(TaskSound sound) { m_selectedCompleteSound = sound; if (m_updatedCb) m_updatedCb(); }
@@ -49,6 +50,7 @@ namespace ToDont
 		TaskTheme m_selectedTheme;
 		std::string m_lastOpen;
 		std::vector<TaskTheme> m_customThemes;
+		std::vector<TaskSound> m_customSounds;
 		bool m_shouldOpenLast;
 		std::function<void()> m_updatedCb;
 
