@@ -89,7 +89,7 @@ namespace ToDont
 				}
 		});
 
-		m_CheckBox->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent& event)
+		/*m_CheckBox->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent& event)
 			{
 				if (is_completed = event.IsChecked()) 
 				{
@@ -97,7 +97,7 @@ namespace ToDont
 					m_completedSound->Play(wxSOUND_ASYNC);
 				}
 				this->Refresh();
-			});
+			});*/
 
 		sizer->Add(m_CheckBox, 0, wxSTRETCH_NOT | wxALL, 10);
 		sizer->Add(m_taskButton, 1, wxGROW | wxALL, 10);
@@ -123,6 +123,11 @@ namespace ToDont
 	TaskButton* TaskElement::GetButton() const
 	{
 		return m_taskButton;
+	}
+
+	void TaskElement::PlayCompletedSound()
+	{
+		m_completedSound->Play(wxSOUND_ASYNC);
 	}
 
 	void TaskElement::AnimateDestroy(std::function<void()> onDone)

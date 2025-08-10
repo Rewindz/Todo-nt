@@ -21,6 +21,7 @@ namespace ToDont
 		
 		void AnimateDestroy(std::function<void()> onDone);
 		void UpdateTheme();
+		void PlayCompletedSound();
 
 	private:
 		wxCheckBox* m_CheckBox;

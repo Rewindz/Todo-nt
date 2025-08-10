@@ -92,7 +92,8 @@ namespace ToDont
 			if (auto label = ToDont::GetTaskString(m_scroll, ""); label.has_value())
 			{
 				auto task = new TaskElement(m_scroll, label.value(), *this->m_settings);
-				m_grid->Prepend(task, 0, wxEXPAND | wxALL, 1);
+				WireTask(task);
+				MoveTaskToActive(task);
 				m_scroll->FitInside();
 			}
 		});
@@ -100,9 +101,37 @@ namespace ToDont
 		
 		m_grid->Add(m_addBtn, 0, wxGROW | wxALL, 10);
 
+		m_completedPane = new wxCollapsiblePane(m_scroll, wxID_ANY, "Completed",
+			wxDefaultPosition, wxDefaultSize, wxCP_DEFAULT_STYLE);
+		//Need to set pane text colour somehow
+		m_grid->Add(m_completedPane, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+
+		{
+			auto* pane = m_completedPane->GetPane();
+			auto* paneBox = new wxBoxSizer(wxVERTICAL);
+			m_completedSizer = new wxBoxSizer(wxVERTICAL);
+			paneBox->AddSpacer(4);
+			paneBox->Add(m_completedSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, 4);
+			pane->SetSizer(paneBox);
+		}
+
+		m_completedPane->Bind(wxEVT_COLLAPSIBLEPANE_CHANGED, [this](wxCollapsiblePaneEvent&)
+			{
+				CallAfter([this] {
+					if (m_completedPane) m_completedPane->GetPane()->Layout();
+					m_scroll->FitInside();
+					m_scroll->Layout();
+
+					
+					Layout();
+					Refresh(false);
+				});
+			});
+
 		m_scroll->SetSizer(m_grid);
 		m_scroll->FitInside();
 		m_scroll->Layout();
+		m_scroll->SetMinClientSize(GetSize());
 
 		m_title = new TaskListTitle(this, "Title", m_settings->GetTheme(), wxSize(25, 25));
 		auto* line = new wxStaticLine(this);
@@ -115,6 +144,7 @@ namespace ToDont
 			{
 				auto theme = this->m_settings->GetTheme();
 				// TODO: TaskElement needs fixing for this
+				// ^ I forget what this was suppose to mean ^
 				for (auto child : m_grid->GetChildren())
 				{
 					auto window = child->GetWindow();
@@ -130,6 +160,17 @@ namespace ToDont
 						window->SetBackgroundColour(theme.bgColor);
 						window->SetForegroundColour(theme.fgColor);
 						window->Refresh();
+					}
+				}
+				for (auto child : m_completedSizer->GetChildren())
+				{
+					auto window = child->GetWindow();
+					if (!window)continue;
+					auto element = dynamic_cast<TaskElement*>(window);
+					if (element)
+					{
+						element->UpdateTheme();
+						element->Refresh();
 					}
 				}
 				for (auto child : m_box->GetChildren())
@@ -165,6 +206,8 @@ namespace ToDont
 		//SetSizerAndFit(sizer);
 		SetSizer(m_box);
 		Layout();
+		SetMinClientSize(GetClientSize());
+		SetSizeHints(GetSize());
 
 	}
 
@@ -186,6 +229,22 @@ namespace ToDont
 				save["tasks"].push_back(obj);
 			}
 		}
+
+		if (m_completedSizer)
+		{
+			for (const auto* item : m_completedSizer->GetChildren())
+			{
+				const auto* casted = wxDynamicCast(item->GetWindow(), TaskElement);
+				if (!casted)continue;
+				json obj =
+					json::object({
+						{"task", casted->GetButton()->GetCurrentLabel().ToStdString()},
+						{"completed", casted->GetCheckBox()->IsChecked()},
+						});
+				save["tasks"].push_back(obj);
+			}
+		}
+
 		std::ofstream save_file(path);
 		if (!save_file)
 		{
@@ -244,7 +303,9 @@ namespace ToDont
 
 				auto new_task = new TaskElement(m_scroll, task_str, *m_settings);
 				new_task->GetCheckBox()->SetValue(completed);
-				m_grid->Prepend(new_task, 1, wxEXPAND | wxALL, 5);
+				WireTask(new_task);
+				if (completed) MoveTaskToCompleted(new_task);
+				else MoveTaskToActive(new_task);
 			}
 			m_scroll->FitInside();
 		}
@@ -301,17 +362,33 @@ namespace ToDont
 
 	void MainFrame::ClearGridOfElements()
 	{
-		std::vector<TaskElement*> tbd;
-		for (const auto* task : m_grid->GetChildren())
 		{
-			auto* casted = wxDynamicCast(task->GetWindow(), TaskElement);
-			if (casted)
-				tbd.push_back(casted);
+			std::vector<TaskElement*> tbd;
+			for (const auto* task : m_grid->GetChildren())
+			{
+				auto* casted = wxDynamicCast(task->GetWindow(), TaskElement);
+				if (casted)
+					tbd.push_back(casted);
+			}
+			for (auto& task : tbd)
+			{
+				m_grid->Detach(task);
+				task->Destroy();
+			}
 		}
-		for (auto& task : tbd)
 		{
-			m_grid->Detach(task);
-			task->Destroy();
+			std::vector<TaskElement*> tbd;
+			for (const auto* task : m_completedSizer->GetChildren())
+			{
+				auto* casted = wxDynamicCast(task->GetWindow(), TaskElement);
+				if (casted)
+					tbd.push_back(casted);
+			}
+			for (auto& task : tbd)
+			{
+				m_completedSizer->Detach(task);
+				task->Destroy();
+			}
 		}
 		m_scroll->Layout();
 	}
@@ -336,7 +413,8 @@ namespace ToDont
 		for (size_t i = 0; i < m_grid->GetItemCount(); i++)
 		{
 			auto item = m_grid->GetItem(i)->GetWindow();
-			if (item && item->GetRect().Contains(point))
+			if (!item) continue;
+			if (item->GetRect().Contains(point) && dynamic_cast<TaskElement*>(item))
 			{
 				//Reorder
 				ReorderDraggedElement(i);
@@ -377,6 +455,62 @@ namespace ToDont
 		CaptureMouse();
 		m_dragStart = ClientToScreen(event.GetPosition());
 		m_frameStart = GetPosition();
+	}
+
+	int MainFrame::IndexOf(wxSizer* s, wxWindow* w) const
+	{
+		if (!s || !w)return -1;
+		for (size_t i = 0; i < s->GetItemCount(); i++)
+			if (auto* item = s->GetItem(i); item && item->GetWindow() == w) 
+				return static_cast<int>(i);
+		return -1;
+	}
+
+	void MainFrame::WireTask(TaskElement* t)
+	{
+		if (!t) return;
+		t->GetCheckBox()->Bind(wxEVT_CHECKBOX, [this, t](wxCommandEvent& e)
+			{
+				if (t->GetCheckBox()->IsChecked())
+				{
+					t->PlayCompletedSound();
+					MoveTaskToCompleted(t);
+				}
+				else
+					MoveTaskToActive(t);
+
+				m_scroll->FitInside();
+				m_scroll->Layout();
+				Layout();
+			});
+	}
+
+	void MainFrame::MoveTaskToActive(TaskElement* t)
+	{
+		if (!t) return;
+
+		m_grid->Detach(t);
+		if (m_completedSizer) m_completedSizer->Detach(t);
+
+		t->Reparent(m_scroll);
+
+		int completedIdx = IndexOf(m_grid, m_completedPane);
+		if (completedIdx < 0) completedIdx = static_cast<int>(m_grid->GetItemCount());
+		m_grid->Insert(completedIdx, t, 1, wxEXPAND | wxALL, 5);
+		m_completedPane->Layout();
+
+	}
+
+	void MainFrame::MoveTaskToCompleted(TaskElement* t)
+	{
+		if (!t || !m_completedSizer) return;
+		m_grid->Detach(t);
+
+		t->Reparent(m_completedPane->GetPane());
+
+		m_completedSizer->Insert(0, t, 0, wxEXPAND | wxALL, 5);
+		if (!m_completedPane->IsExpanded())
+			m_completedPane->Expand();
 	}
 
 }

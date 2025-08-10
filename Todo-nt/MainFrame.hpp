@@ -1,6 +1,7 @@
 #pragma once
 #include <wx/wx.h>
 #include <wx/statline.h>
+#include <wx/collpane.h>
 #include <nlohmann/json.hpp>
 #include <optional>
 #include <fstream>
@@ -42,6 +43,8 @@ namespace ToDont
 		wxFlexGridSizer* m_grid;
 		TaskButton* m_addBtn;
 		TaskListTitle* m_title;
+		wxCollapsiblePane* m_completedPane;
+		wxBoxSizer* m_completedSizer;
 		wxBoxSizer* m_box;
 		std::string m_workingFile;
 
@@ -54,6 +57,11 @@ namespace ToDont
 		void Load(std::ifstream& stream);
 		void Save(std::string path) const;
 		void ClearGridOfElements();
+
+		int IndexOf(wxSizer* s, wxWindow* w) const;
+		void WireTask(TaskElement* t);
+		void MoveTaskToActive(TaskElement* t);
+		void MoveTaskToCompleted(TaskElement* t);
 
 	};
 }
