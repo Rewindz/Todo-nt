@@ -6,6 +6,18 @@
 namespace ToDont
 {
 
+	bool ToDont::TaskSound::UpsertByName(std::vector<TaskSound>& vec, const TaskSound& t)
+	{
+		if (auto it = std::ranges::find(vec, t.name, &TaskSound::name); it != vec.end())
+		{
+			*it = t;
+			return true;
+		}
+		else
+			vec.push_back(t);
+		return false;
+	}
+
 	bool ToDont::TaskTheme::UpsertByName(std::vector<TaskTheme>& vec, const TaskTheme& t)
 	{
 		if (auto it = std::ranges::find(vec, t.name, &TaskTheme::name); it != vec.end())

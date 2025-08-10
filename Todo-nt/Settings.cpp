@@ -46,6 +46,16 @@ namespace ToDont
 		}
 	}
 
+	void Settings::SubmitSound(TaskSound sound)
+	{
+		auto& sounds = const_cast<std::vector<TaskSound>&>(GetAvailableSounds());
+		TaskSound::UpsertByName(m_customSounds, sound);
+		if (TaskSound::UpsertByName(sounds, sound))
+		{
+			if (m_updatedCb) m_updatedCb();
+		}
+	}
+
 	bool Settings::load()
 	{
 		if (m_filePath.empty())
@@ -91,6 +101,19 @@ namespace ToDont
 					t.active = colourFromObject(theme["active"]);
 					t.hover = colourFromObject(theme["hover"]);
 					SubmitTheme(t);
+				}
+			}
+			auto sounds = custom["sounds"];
+			if (sounds.is_array())
+			{
+				for (const auto& sound : sounds)
+				{
+					if (!sounds.is_object())continue;
+					TaskSound s;
+					s.custom = true;
+					s.name = sound["name"];
+					s.filePath = sound["path"];
+					SubmitSound(s);
 				}
 			}
 		}
@@ -160,7 +183,17 @@ namespace ToDont
 			themeObj["active"] = objectFromColour(theme.active);
 			customThemes.push_back(themeObj);
 		}
+
+		json customSounds = json::array();
+		for (auto sound : m_customSounds)
+		{
+			json soundObj = json::object();
+			soundObj["name"] = sound.name;
+			soundObj["path"] = sound.filePath;
+		}
+
 		customObj["themes"] = customThemes;
+		customObj["sounds"] = customSounds;
 		
 		json_["settings"] = settings;
 		json_["custom"] = customObj;

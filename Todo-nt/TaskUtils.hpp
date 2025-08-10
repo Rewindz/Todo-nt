@@ -18,6 +18,8 @@ namespace ToDont
 	{
 		std::string name;
 		std::string filePath;
+        bool custom = false;
+        static bool UpsertByName(std::vector<TaskSound>& vec, const TaskSound& t);
         static std::optional<TaskSound> GetSoundByName(const std::string& name);
 	};
 

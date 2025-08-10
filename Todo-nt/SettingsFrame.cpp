@@ -1,6 +1,7 @@
 #include <wx/sizer.h>
 #include <wx/choice.h>
 #include <wx/checkbox.h>
+#include <wx/dialog.h>
 
 #include "SettingsFrame.hpp"
 #include "CustomFrame.hpp"
@@ -118,7 +119,7 @@ namespace ToDont
 		}
 
 		{
-			auto shouldOpenChk = new wxCheckBox(this, wxID_ANY, "Open Last File On Start?");
+			auto* shouldOpenChk = new wxCheckBox(this, wxID_ANY, "Open Last File On Start?");
 			shouldOpenChk->SetValue(m_settings.GetShouldOpenLast());
 			shouldOpenChk->Bind(wxEVT_CHECKBOX, [this](wxCommandEvent& event)
 				{
@@ -128,7 +129,37 @@ namespace ToDont
 		}
 
 		{
-			auto* openCustom = new TaskButton(this, wxID_ANY, wxDefaultSize, "Create Custom Theme");
+			auto* customSoundBtn = new TaskButton(this, wxID_ANY, wxSize(-1, 35), "Add Custom Sound");
+			customSoundBtn->SetTheme(m_settings.GetTheme());
+			customSoundBtn->Bind(wxEVT_BUTTON, [this](wxCommandEvent& event)
+				{
+					wxFileDialog loadDialog(
+						this,
+						"Open Sound File",
+						"",
+						"",
+						"WAV files (*.wav)|*.wav",
+						wxFD_OPEN | wxFD_FILE_MUST_EXIST
+					);
+
+					if (loadDialog.ShowModal() != wxID_OK)
+					{
+						wxLogError("Failed to select sound file to load!");
+						return;
+					}
+
+					TaskSound s;
+					s.custom = true;
+					s.name = loadDialog.GetFilename();
+					s.filePath = loadDialog.GetPath();
+					m_settings.SubmitSound(s);
+
+				});
+			sizer->Add(customSoundBtn, 0, wxEXPAND | wxALL, 5);
+		}
+
+		{
+			auto* openCustom = new TaskButton(this, wxID_ANY, wxSize(-1, 35), "Create Custom Theme");
 			openCustom->SetTheme(m_settings.GetTheme());
 			openCustom->Bind(wxEVT_BUTTON, [this](wxCommandEvent& event) 
 				{
@@ -136,10 +167,9 @@ namespace ToDont
 					custom->CenterOnScreen();
 					custom->Show();
 				});
-			sizer->Add(openCustom, 0, wxEXPAND | wxALL, 10);
+			sizer->Add(openCustom, 0, wxEXPAND | wxALL, 5);
 		}
 		
-		sizer->AddSpacer(5);
 		SetSizer(sizer);
 		Layout();
 
