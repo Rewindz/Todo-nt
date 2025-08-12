@@ -2,6 +2,7 @@
 #include <wx/choice.h>
 #include <wx/checkbox.h>
 #include <wx/dialog.h>
+#include <wx/spinctrl.h>
 
 #include "SettingsFrame.hpp"
 #include "CustomFrame.hpp"
@@ -71,7 +72,7 @@ namespace ToDont
 				});
 
 			sizer->Add(themeLbl, 0, wxEXPAND | wxALL, 5);
-			sizer->Add(theme, 0, wxEXPAND | wxALL, 10);
+			sizer->Add(theme, 0, wxEXPAND | wxALL, 5);
 		}
 
 		{
@@ -93,7 +94,7 @@ namespace ToDont
 				});
 
 			sizer->Add(cSoundLbl, 0, wxEXPAND | wxALL, 5);
-			sizer->Add(cSound, 0, wxEXPAND | wxALL, 10);
+			sizer->Add(cSound, 0, wxEXPAND | wxALL, 5);
 		}
 
 		{
@@ -115,7 +116,7 @@ namespace ToDont
 				});
 
 			sizer->Add(cSoundLbl, 0, wxEXPAND | wxALL, 5);
-			sizer->Add(cSound, 0, wxEXPAND | wxALL, 10);
+			sizer->Add(cSound, 0, wxEXPAND | wxALL, 5);
 		}
 
 		{
@@ -126,6 +127,42 @@ namespace ToDont
 					this->m_settings.SetShouldOpenLast(event.IsChecked());
 				});
 			sizer->Add(shouldOpenChk, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP| wxBOTTOM, 5);
+		}
+
+		{
+			auto theme = m_settings.GetTheme();
+
+			auto* widthSizer = new wxBoxSizer(wxHORIZONTAL);
+			auto* widthLbl = new wxStaticText(this, wxID_ANY, "Width:");
+			auto* windWidth = new wxSpinCtrl(this, wxID_ANY);
+			windWidth->SetBackgroundColour(theme.bgColor);
+			windWidth->SetForegroundColour(theme.fgColor);
+			windWidth->SetRange(300, 6000);
+			windWidth->SetValue(m_settings.GetWindowSize().GetWidth());
+			windWidth->Bind(wxEVT_SPINCTRL, [this](wxSpinEvent& event)
+				{
+					m_settings.SetWidth(event.GetInt());
+				});
+
+			auto* heightSizer = new wxBoxSizer(wxHORIZONTAL);
+			auto* heightLbl = new wxStaticText(this, wxID_ANY, "Height:");
+			auto* windHeight = new wxSpinCtrl(this, wxID_ANY);
+			windHeight->SetRange(450, 6000);
+			windHeight->SetValue(m_settings.GetWindowSize().GetHeight());
+			windHeight->SetBackgroundColour(theme.bgColor);
+			windHeight->SetForegroundColour(theme.fgColor);
+			windHeight->Bind(wxEVT_SPINCTRL, [this](wxSpinEvent& event)
+				{
+					m_settings.SetHeight(event.GetInt());
+				});
+
+			widthSizer->Add(widthLbl, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+			heightSizer->Add(heightLbl, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+			widthSizer->Add(windWidth, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+			heightSizer->Add(windHeight, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5);
+			sizer->Add(widthSizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
+			sizer->Add(heightSizer, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
+
 		}
 
 		{

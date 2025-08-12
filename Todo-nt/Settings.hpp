@@ -36,7 +36,10 @@ namespace ToDont
 		void SetShouldOpenLast(bool should) { m_shouldOpenLast = should; }
 		std::string GetSaveFilePath() const { return m_filePath; }
 		void SetSaveFilePath(std::string path) { m_filePath = path; }
-
+		wxSize GetWindowSize() const { return m_windSize; }
+		void SetWindowSize(wxSize size) { m_windSize = size; }
+		void SetWidth(int w) { m_windSize.SetWidth(w); }
+		void SetHeight(int h) { m_windSize.SetHeight(h); }
 
 		void SetUpdatedCallback(std::function<void()> callback) { m_updatedCb = std::move(callback); }
 
@@ -51,6 +54,7 @@ namespace ToDont
 		std::string m_lastOpen;
 		std::vector<TaskTheme> m_customThemes;
 		std::vector<TaskSound> m_customSounds;
+		wxSize m_windSize;
 		bool m_shouldOpenLast;
 		std::function<void()> m_updatedCb;
 

@@ -66,6 +66,7 @@ namespace ToDont
 		m_box = new wxBoxSizer(wxVERTICAL);
 		m_grid = new wxFlexGridSizer(0, 1, 2, 10);
 		m_scroll = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL);
+		m_scroll->ShowScrollbars(wxSHOW_SB_NEVER, wxSHOW_SB_NEVER);
 		m_scroll->SetScrollRate(0, 10);
 		m_grid->AddGrowableCol(0);
 
@@ -102,12 +103,21 @@ namespace ToDont
 		m_grid->Add(m_addBtn, 0, wxGROW | wxALL, 10);
 
 		m_completedPane = new wxCollapsiblePane(m_scroll, wxID_ANY, "Completed",
-			wxDefaultPosition, wxDefaultSize, wxCP_DEFAULT_STYLE);
+			wxDefaultPosition, wxDefaultSize, wxCP_DEFAULT_STYLE | wxCP_NO_TLW_RESIZE);
 		//Need to set pane text colour somehow
 		m_grid->Add(m_completedPane, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
 
 		{
 			auto* pane = m_completedPane->GetPane();
+			for (auto* child : m_completedPane->GetChildren())
+			{
+				if (child != pane)
+				{
+					child->SetForegroundColour(m_settings->GetTheme().fgColor);
+					child->Refresh();
+				}
+			}
+
 			auto* paneBox = new wxBoxSizer(wxVERTICAL);
 			m_completedSizer = new wxBoxSizer(wxVERTICAL);
 			paneBox->AddSpacer(4);
@@ -121,8 +131,6 @@ namespace ToDont
 					if (m_completedPane) m_completedPane->GetPane()->Layout();
 					m_scroll->FitInside();
 					m_scroll->Layout();
-
-					
 					Layout();
 					Refresh(false);
 				});
@@ -131,7 +139,6 @@ namespace ToDont
 		m_scroll->SetSizer(m_grid);
 		m_scroll->FitInside();
 		m_scroll->Layout();
-		m_scroll->SetMinClientSize(GetSize());
 
 		m_title = new TaskListTitle(this, "Title", m_settings->GetTheme(), wxSize(25, 25));
 		auto* line = new wxStaticLine(this);
@@ -173,6 +180,14 @@ namespace ToDont
 						element->Refresh();
 					}
 				}
+				for (auto* child : m_completedPane->GetChildren())
+				{
+					if (child != m_completedPane->GetPane())
+					{
+						child->SetForegroundColour(theme.fgColor);
+						child->Refresh();
+					}
+				}
 				for (auto child : m_box->GetChildren())
 				{
 					auto window = child->GetWindow();
@@ -203,11 +218,8 @@ namespace ToDont
 		}
 			
 
-		//SetSizerAndFit(sizer);
 		SetSizer(m_box);
 		Layout();
-		SetMinClientSize(GetClientSize());
-		SetSizeHints(GetSize());
 
 	}
 
@@ -499,6 +511,12 @@ namespace ToDont
 		m_grid->Insert(completedIdx, t, 1, wxEXPAND | wxALL, 5);
 		m_completedPane->Layout();
 
+		if (auto* s = m_scroll->GetSizer())
+		{
+			s->Layout();
+			m_scroll->SetVirtualSize(s->GetMinSize());
+		}
+
 	}
 
 	void MainFrame::MoveTaskToCompleted(TaskElement* t)
@@ -508,9 +526,26 @@ namespace ToDont
 
 		t->Reparent(m_completedPane->GetPane());
 
-		m_completedSizer->Insert(0, t, 0, wxEXPAND | wxALL, 5);
+		m_completedSizer->Prepend(t, 0, wxEXPAND | wxALL, 5);
 		if (!m_completedPane->IsExpanded())
 			m_completedPane->Expand();
+
+		auto* pane = m_completedPane->GetPane();
+		pane->InvalidateBestSize();
+		m_completedPane->InvalidateBestSize();
+		pane->Layout();
+		m_completedPane->Layout();
+
+		if (auto* s = m_scroll->GetSizer())
+		{
+			s->Layout();
+			m_scroll->SetVirtualSize(s->GetMinSize());
+		}
+
+		m_scroll->InvalidateBestSize();
+		m_scroll->Layout();
+
+		Layout();
 	}
 
 }

@@ -19,7 +19,8 @@ wxIMPLEMENT_APP(Application);
 bool Application::OnInit()
 {
 	auto settings = std::make_unique<ToDont::Settings>();
-	ToDont::MainFrame* frame = new ToDont::MainFrame(wxSize(300, 400), std::move(settings));
+	auto size = settings->GetWindowSize();
+	ToDont::MainFrame* frame = new ToDont::MainFrame(size, std::move(settings));
 	if (!frame) return false;
 	frame->SetIcons(ToDont::GetAppIcons());
 	frame->CenterOnScreen();

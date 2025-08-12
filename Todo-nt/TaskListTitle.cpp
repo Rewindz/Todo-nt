@@ -4,7 +4,7 @@
 namespace ToDont
 {
 	TaskListTitle::TaskListTitle(wxWindow* parent, wxString label, const TaskTheme& theme, wxSize size)
-		: wxStaticText(parent, wxID_ANY, label, wxDefaultPosition, size, wxALIGN_CENTER_HORIZONTAL)
+		: wxStaticText(parent, wxID_ANY, label, wxDefaultPosition, size, wxALIGN_LEFT)
 	{
 		this->SetForegroundColour(theme.fgColor);
 		SetFontSize(this, 16);

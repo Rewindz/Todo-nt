@@ -25,6 +25,7 @@ namespace ToDont
 		m_selectedDeleteSound = GetAvailableSounds().at(0);
 		m_selectedTheme = GetAvailableThemes().at(0);
 		m_shouldOpenLast = true;
+		m_windSize = wxSize(300, 450);
 		save();
 	}
 
@@ -62,10 +63,7 @@ namespace ToDont
 			m_filePath = "./settings.json";
 
 		if (!std::filesystem::exists(m_filePath))
-		{
 			createDefaultSettings();
-			return save();
-		}
 
 		std::ifstream file(m_filePath);
 		if (!file)
@@ -131,6 +129,12 @@ namespace ToDont
 				m_lastOpen = settings["open"];
 			if (settings["open_last"].is_boolean())
 				m_shouldOpenLast = settings["open_last"];
+			if (settings["window"].is_object())
+			{
+				int w = settings["window"]["w"];
+				int h = settings["window"]["h"];
+				m_windSize = wxSize(w, h);
+			}
 		}
 		else 
 		{
@@ -167,6 +171,7 @@ namespace ToDont
 		settings["completed"] = m_selectedCompleteSound.name;
 		settings["deleted"] = m_selectedDeleteSound.name;
 		settings["open_last"] = m_shouldOpenLast;
+		settings["window"] = { {"w", m_windSize.x}, {"h", m_windSize.y} };
 		if (!m_lastOpen.empty())
 		{
 			settings["open"] = m_lastOpen;
