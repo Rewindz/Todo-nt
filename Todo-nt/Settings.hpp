@@ -40,6 +40,8 @@ namespace ToDont
 		void SetWindowSize(wxSize size) { m_windSize = size; }
 		void SetWidth(int w) { m_windSize.SetWidth(w); }
 		void SetHeight(int h) { m_windSize.SetHeight(h); }
+		bool GetOntop() const { return m_ontop; }
+		void SetOntop(bool ontop) { m_ontop = ontop; }
 
 		void SetUpdatedCallback(std::function<void()> callback) { m_updatedCb = std::move(callback); }
 
@@ -56,6 +58,7 @@ namespace ToDont
 		std::vector<TaskSound> m_customSounds;
 		wxSize m_windSize;
 		bool m_shouldOpenLast;
+		bool m_ontop;
 		std::function<void()> m_updatedCb;
 
 	};

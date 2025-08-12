@@ -36,6 +36,7 @@ namespace ToDont
 
 		auto* sizer = new wxBoxSizer(wxVERTICAL);
 
+		// Theme Selection
 		{
 			wxArrayString a;
 			for (const auto& theme : GetAvailableThemes())
@@ -75,6 +76,7 @@ namespace ToDont
 			sizer->Add(theme, 0, wxEXPAND | wxALL, 5);
 		}
 
+		// Completed Sound Selection
 		{
 			wxArrayString a;
 			for (const auto& sound : GetAvailableSounds())
@@ -97,6 +99,7 @@ namespace ToDont
 			sizer->Add(cSound, 0, wxEXPAND | wxALL, 5);
 		}
 
+		// Deleted Sound Selection
 		{
 			wxArrayString a;
 			for (const auto& sound : GetAvailableSounds())
@@ -119,6 +122,7 @@ namespace ToDont
 			sizer->Add(cSound, 0, wxEXPAND | wxALL, 5);
 		}
 
+		// Open Last Selection
 		{
 			auto* shouldOpenChk = new wxCheckBox(this, wxID_ANY, "Open Last File On Start?");
 			shouldOpenChk->SetValue(m_settings.GetShouldOpenLast());
@@ -129,6 +133,7 @@ namespace ToDont
 			sizer->Add(shouldOpenChk, 0, wxALIGN_CENTER_HORIZONTAL | wxTOP| wxBOTTOM, 5);
 		}
 
+		// Width & Height Selection
 		{
 			auto theme = m_settings.GetTheme();
 
@@ -165,6 +170,7 @@ namespace ToDont
 
 		}
 
+		// Custom Sound Button
 		{
 			auto* customSoundBtn = new TaskButton(this, wxID_ANY, wxSize(-1, 35), "Add Custom Sound");
 			customSoundBtn->SetTheme(m_settings.GetTheme());
@@ -195,6 +201,7 @@ namespace ToDont
 			sizer->Add(customSoundBtn, 0, wxEXPAND | wxALL, 5);
 		}
 
+		// Custom Theme Button
 		{
 			auto* openCustom = new TaskButton(this, wxID_ANY, wxSize(-1, 35), "Create Custom Theme");
 			openCustom->SetTheme(m_settings.GetTheme());

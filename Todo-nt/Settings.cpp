@@ -25,6 +25,7 @@ namespace ToDont
 		m_selectedDeleteSound = GetAvailableSounds().at(0);
 		m_selectedTheme = GetAvailableThemes().at(0);
 		m_shouldOpenLast = true;
+		m_ontop = false;
 		m_windSize = wxSize(300, 450);
 		save();
 	}
@@ -135,6 +136,8 @@ namespace ToDont
 				int h = settings["window"]["h"];
 				m_windSize = wxSize(w, h);
 			}
+			if (settings["ontop"].is_boolean())
+				m_ontop = settings["ontop"];
 		}
 		else 
 		{
@@ -171,6 +174,7 @@ namespace ToDont
 		settings["completed"] = m_selectedCompleteSound.name;
 		settings["deleted"] = m_selectedDeleteSound.name;
 		settings["open_last"] = m_shouldOpenLast;
+		settings["ontop"] = m_ontop;
 		settings["window"] = { {"w", m_windSize.x}, {"h", m_windSize.y} };
 		if (!m_lastOpen.empty())
 		{

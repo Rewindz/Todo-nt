@@ -7,7 +7,7 @@ using json = nlohmann::json;
 namespace ToDont
 {
 	MainFrame::MainFrame(wxSize windowSize, std::unique_ptr<Settings> settings)
-		: wxFrame(nullptr, wxID_ANY, "ToDo-nt", wxDefaultPosition, windowSize, FRAME_STYLE),
+		: wxFrame(nullptr, wxID_ANY, "Todo-nt", wxDefaultPosition, windowSize, FRAME_STYLE),
 		m_settings(std::move(settings))
 	{
 
@@ -33,10 +33,14 @@ namespace ToDont
 				int id_save = wxWindow::NewControlId();
 				int id_load = wxWindow::NewControlId();
 				int id_settings = wxWindow::NewControlId();
+				int id_ontop = wxWindow::NewControlId();
 
 				wxMenu menu;
 				menu.Append(id_save, "Save");
 				menu.Append(id_load, "Load");
+				menu.AppendSeparator();
+				menu.AppendCheckItem(id_ontop, "Always On Top?");
+				menu.Check(id_ontop, m_settings->GetOntop());
 				menu.AppendSeparator();
 				menu.Append(id_settings, "Settings");
 				menu.AppendSeparator();
@@ -55,6 +59,16 @@ namespace ToDont
 							settingsFrame->Show();
 						}
 					}, id_settings);
+				Bind(wxEVT_MENU, [this](wxCommandEvent& event)
+					{
+						auto style = this->GetWindowStyleFlag();
+						if (event.IsChecked())
+							style |= wxSTAY_ON_TOP;
+						else
+							style &= ~wxSTAY_ON_TOP;
+						this->SetWindowStyleFlag(style);
+						m_settings->SetOntop(event.IsChecked());
+					}, id_ontop);
 				Bind(wxEVT_MENU, &MainFrame::SaveEvent, this, id_save);
 				Bind(wxEVT_MENU, &MainFrame::LoadEvent, this, id_load);
 
@@ -62,6 +76,8 @@ namespace ToDont
 			});
 			
 		SetBackgroundColour(m_settings->GetTheme().bgColor);
+		if (m_settings->GetOntop())
+			SetWindowStyleFlag(GetWindowStyleFlag() | wxSTAY_ON_TOP);
 
 		m_box = new wxBoxSizer(wxVERTICAL);
 		m_grid = new wxFlexGridSizer(0, 1, 2, 10);
@@ -104,9 +120,9 @@ namespace ToDont
 
 		m_completedPane = new wxCollapsiblePane(m_scroll, wxID_ANY, "Completed",
 			wxDefaultPosition, wxDefaultSize, wxCP_DEFAULT_STYLE | wxCP_NO_TLW_RESIZE);
-		//Need to set pane text colour somehow
 		m_grid->Add(m_completedPane, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
 
+		// Completed pane setup
 		{
 			auto* pane = m_completedPane->GetPane();
 			for (auto* child : m_completedPane->GetChildren())
@@ -172,7 +188,7 @@ namespace ToDont
 				for (auto child : m_completedSizer->GetChildren())
 				{
 					auto window = child->GetWindow();
-					if (!window)continue;
+					if (!window) continue;
 					auto element = dynamic_cast<TaskElement*>(window);
 					if (element)
 					{
