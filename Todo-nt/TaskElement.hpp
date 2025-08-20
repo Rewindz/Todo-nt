@@ -8,6 +8,8 @@
 #include <wx/dnd.h>
 #include "TaskButton.hpp"
 #include "Settings.hpp"
+#include "TaskCheck.hpp"
+
 
 namespace ToDont
 {
@@ -23,8 +25,12 @@ namespace ToDont
 		void UpdateTheme();
 		void PlayCompletedSound();
 
+		//bool GetImportant() const { return m_important->IsChecked(); }
+		//void SetImportant(bool b) { m_important->SetValue(b); }
+
 	private:
-		wxCheckBox* m_CheckBox;
+		wxCheckBox* m_checkBox;
+		TaskCheck* m_important;
 		TaskButton* m_taskButton;
 		std::unique_ptr<wxSound> m_completedSound;
 		std::unique_ptr<wxSound> m_deletedSound;
@@ -34,7 +40,6 @@ namespace ToDont
 		int m_currentHeight;
 		const Settings& m_settings;
 
-		void OnPaint(wxPaintEvent& event);
 		void OnAnimTick(wxTimerEvent& event);
 	};
 }

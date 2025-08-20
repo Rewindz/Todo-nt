@@ -7,6 +7,7 @@
 #include <fstream>
 #include <string>
 #include <memory>
+#include <stdexcept>
 
 #include "TaskButton.hpp"
 #include "TaskElement.hpp"
@@ -37,10 +38,19 @@ namespace ToDont
 		
 		void SetDraggedTask(TaskElement* task);
 
+		const Settings& GetSettings() const { return *m_settings; }
+		const Settings* GetSettingsPtr() const
+		{
+			if (!m_settings)
+				throw std::runtime_error("Settings not valid!");
+			return m_settings.get();
+		}
+
 	private:
 		wxPoint m_dragStart, m_frameStart;
 		wxScrolledWindow* m_scroll;
 		wxFlexGridSizer* m_grid;
+		wxPanel* m_canvas;
 		TaskButton* m_addBtn;
 		TaskListTitle* m_title;
 		wxCollapsiblePane* m_completedPane;

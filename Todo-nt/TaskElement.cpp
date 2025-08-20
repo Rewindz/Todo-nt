@@ -58,8 +58,9 @@ namespace ToDont
 					{
 						AnimateDestroy([this]()
 							{
-								GetParent()->GetSizer()->Detach(this);
-								GetParent()->FitInside();
+								auto* parent = GetParent();
+								parent->GetSizer()->Detach(this);
+								parent->Layout();
 							});
 						
 					}, id_delete);
@@ -77,7 +78,7 @@ namespace ToDont
 			});
 
 		auto sizer = new wxBoxSizer(wxHORIZONTAL);
-		m_CheckBox = new wxCheckBox(this, wxID_ANY, "");
+		m_checkBox = new wxCheckBox(this, wxID_ANY, "");
 		m_taskButton = new TaskButton(this, wxID_ANY, this->GetSize(), label);
 		m_taskButton->SetTheme(m_settings.GetTheme());
 		m_taskButton->Bind(wxEVT_BUTTON, [this](wxCommandEvent& event) 
@@ -88,36 +89,21 @@ namespace ToDont
 					this->Refresh();
 				}
 		});
+		m_important = new TaskCheck(m_settings, this, wxID_ANY);
 
-		/*m_CheckBox->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent& event)
-			{
-				if (is_completed = event.IsChecked()) 
-				{
-					//task_button->SetLabel(wxString("COMPLETED!"));
-					m_completedSound->Play(wxSOUND_ASYNC);
-				}
-				this->Refresh();
-			});*/
 
-		sizer->Add(m_CheckBox, 0, wxSTRETCH_NOT | wxALL, 10);
+
+		sizer->Add(m_checkBox, 0, wxSTRETCH_NOT | wxALIGN_CENTRE_VERTICAL | wxALL, 10);
 		sizer->Add(m_taskButton, 1, wxGROW | wxALL, 10);
+		sizer->Add(m_important, 0, wxALIGN_CENTER_VERTICAL | wxALL, 10);
 		this->SetBackgroundColour(m_settings.GetTheme().bgColor);
 		this->SetForegroundColour(m_settings.GetTheme().fgColor);
 		this->SetSizerAndFit(sizer);
 	}
 
-	void TaskElement::OnPaint(wxPaintEvent& event)
-	{
-		wxPaintDC dc(this);
-		wxSize size = GetClientSize();
-		dc.SetBrush(m_settings.GetTheme().fgColor);
-		dc.SetPen(*wxTRANSPARENT_PEN);
-		dc.DrawRoundedRectangle(0, 0, size.x, size.y, 10);
-	}
-
 	wxCheckBox* TaskElement::GetCheckBox() const
 	{
-		return m_CheckBox;
+		return m_checkBox;
 	}
 
 	TaskButton* TaskElement::GetButton() const

@@ -19,9 +19,9 @@ namespace ToDont
 
 		Bind(wxEVT_CLOSE_WINDOW, [this](wxCloseEvent& event)
 			{
+				this->m_settings->SetLastOpen(m_workingFile);
 				if (!this->m_workingFile.empty())
 				{
-					this->m_settings->SetLastOpen(m_workingFile);
 					Save(this->m_workingFile);
 				}
 				event.Skip();
@@ -34,8 +34,10 @@ namespace ToDont
 				int id_load = wxWindow::NewControlId();
 				int id_settings = wxWindow::NewControlId();
 				int id_ontop = wxWindow::NewControlId();
+				int id_new = wxWindow::NewControlId();
 
 				wxMenu menu;
+				menu.Append(id_new, "New");
 				menu.Append(id_save, "Save");
 				menu.Append(id_load, "Load");
 				menu.AppendSeparator();
@@ -46,6 +48,12 @@ namespace ToDont
 				menu.AppendSeparator();
 				menu.Append(id_quit, "Quit?");
 
+				Bind(wxEVT_MENU, [this](wxCommandEvent& event)
+					{
+						m_workingFile = "";
+						ClearGridOfElements();
+						m_title->SetLabel("Title");
+					}, id_new);
 				Bind(wxEVT_MENU, [this](wxCommandEvent& event)
 					{
 						Close(true);
@@ -84,7 +92,10 @@ namespace ToDont
 		m_scroll = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL);
 		m_scroll->ShowScrollbars(wxSHOW_SB_NEVER, wxSHOW_SB_NEVER);
 		m_scroll->SetScrollRate(0, 10);
+		m_canvas = new wxPanel(m_scroll);
 		m_grid->AddGrowableCol(0);
+		m_grid->SetMinSize(wxSize(m_scroll->GetClientSize().GetWidth(), -1));
+		m_canvas->SetSizer(m_grid);
 
 		m_scroll->Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& event) {
 			this->GetEventHandler()->ProcessEvent(event);
@@ -98,17 +109,17 @@ namespace ToDont
 			this->GetEventHandler()->ProcessEvent(event);
 			});
 
-		m_scroll->SetDropTarget(new TaskDropTarget(m_scroll, [this](wxPoint point)
+		m_scroll->SetDropTarget(new TaskDropTarget(m_canvas, [this](wxPoint point)
 			{
 				HandleDropAtPosition(point);
 			}));
 
-		m_addBtn = new TaskButton(m_scroll, wxID_ANY, wxSize(20, 20), "Add");
+		m_addBtn = new TaskButton(m_canvas, wxID_ANY, wxSize(20, 20), "Add");
 		m_addBtn->SetTheme(m_settings->GetTheme());
 		m_addBtn->Bind(wxEVT_BUTTON, [this](wxCommandEvent& event) {
-			if (auto label = ToDont::GetTaskString(m_scroll, ""); label.has_value())
+			if (auto label = ToDont::GetTaskString(m_canvas, ""); label.has_value())
 			{
-				auto task = new TaskElement(m_scroll, label.value(), *this->m_settings);
+				auto task = new TaskElement(m_canvas, label.value(), *this->m_settings);
 				WireTask(task);
 				MoveTaskToActive(task);
 				m_scroll->FitInside();
@@ -118,7 +129,7 @@ namespace ToDont
 		
 		m_grid->Add(m_addBtn, 0, wxGROW | wxALL, 10);
 
-		m_completedPane = new wxCollapsiblePane(m_scroll, wxID_ANY, "Completed",
+		m_completedPane = new wxCollapsiblePane(m_canvas, wxID_ANY, "Completed",
 			wxDefaultPosition, wxDefaultSize, wxCP_DEFAULT_STYLE | wxCP_NO_TLW_RESIZE);
 		m_grid->Add(m_completedPane, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
 
@@ -145,23 +156,27 @@ namespace ToDont
 			{
 				CallAfter([this] {
 					if (m_completedPane) m_completedPane->GetPane()->Layout();
-					m_scroll->FitInside();
+					m_canvas->Layout();
 					m_scroll->Layout();
+					m_scroll->FitInside();
 					Layout();
 					Refresh(false);
 				});
 			});
 
-		m_scroll->SetSizer(m_grid);
+
+		auto* scrollBox = new wxBoxSizer(wxVERTICAL);
+		scrollBox->Add(m_canvas, 0, wxEXPAND);
+		m_scroll->SetSizer(scrollBox);
+		m_canvas->Layout();
 		m_scroll->FitInside();
-		m_scroll->Layout();
 
 		m_title = new TaskListTitle(this, "Title", m_settings->GetTheme(), wxSize(25, 25));
 		auto* line = new wxStaticLine(this);
 
 		m_box->Add(m_title, 0, wxEXPAND | wxALL, 10);
 		m_box->Add(line, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 5);
-		m_box->Add(m_scroll, 1, wxEXPAND | wxALL, 10);
+		m_box->Add(m_scroll, 1, wxEXPAND);
 
 		m_settings->SetUpdatedCallback([this]()
 			{
@@ -298,7 +313,10 @@ namespace ToDont
 		);
 
 		if (saveDialog.ShowModal() == wxID_OK)
-			Save(saveDialog.GetPath().ToStdString());
+		{
+			m_workingFile = saveDialog.GetPath().ToStdString();
+			Save(m_workingFile);
+		}
 		else
 			wxLogError("Failed to select file save location!");
 	}
@@ -520,18 +538,18 @@ namespace ToDont
 		m_grid->Detach(t);
 		if (m_completedSizer) m_completedSizer->Detach(t);
 
-		t->Reparent(m_scroll);
+		t->Reparent(m_canvas);
+		t->Show();
 
 		int completedIdx = IndexOf(m_grid, m_completedPane);
 		if (completedIdx < 0) completedIdx = static_cast<int>(m_grid->GetItemCount());
-		m_grid->Insert(completedIdx, t, 1, wxEXPAND | wxALL, 5);
+		m_grid->Insert(completedIdx, t, 0, wxEXPAND | wxALL, 5);
 		m_completedPane->Layout();
 
-		if (auto* s = m_scroll->GetSizer())
-		{
-			s->Layout();
-			m_scroll->SetVirtualSize(s->GetMinSize());
-		}
+		//m_grid->FitInside(m_scroll);
+		m_canvas->Layout();
+		m_scroll->FitInside();
+		FitInside();
 
 	}
 
@@ -541,6 +559,7 @@ namespace ToDont
 		m_grid->Detach(t);
 
 		t->Reparent(m_completedPane->GetPane());
+		t->Show();
 
 		m_completedSizer->Prepend(t, 0, wxEXPAND | wxALL, 5);
 		if (!m_completedPane->IsExpanded())
@@ -552,14 +571,10 @@ namespace ToDont
 		pane->Layout();
 		m_completedPane->Layout();
 
-		if (auto* s = m_scroll->GetSizer())
-		{
-			s->Layout();
-			m_scroll->SetVirtualSize(s->GetMinSize());
-		}
+		//m_grid->FitInside(m_scroll);
+		m_canvas->Layout();
+		m_scroll->FitInside();
 
-		m_scroll->InvalidateBestSize();
-		m_scroll->Layout();
 
 		Layout();
 	}

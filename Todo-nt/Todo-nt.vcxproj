@@ -161,6 +161,7 @@
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="SettingsFrame.cpp" />
     <ClCompile Include="TaskButton.cpp" />
+    <ClCompile Include="TaskCheck.cpp" />
     <ClCompile Include="TaskDropTarget.cpp" />
     <ClCompile Include="TaskElement.cpp" />
     <ClCompile Include="TaskListTitle.cpp" />
@@ -173,10 +174,12 @@
     <ClInclude Include="Settings.hpp" />
     <ClInclude Include="SettingsFrame.hpp" />
     <ClInclude Include="TaskButton.hpp" />
+    <ClInclude Include="TaskCheck.hpp" />
     <ClInclude Include="TaskDropTarget.hpp" />
     <ClInclude Include="TaskElement.hpp" />
     <ClInclude Include="TaskListTitle.hpp" />
     <ClInclude Include="TaskUtils.hpp" />
+    <ClInclude Include="utils.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Resource.rc" />
