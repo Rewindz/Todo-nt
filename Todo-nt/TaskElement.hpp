@@ -18,15 +18,16 @@ namespace ToDont
 	public:
 		TaskElement(wxWindow* parent, const wxString& label, const Settings& settings);
 
-		wxCheckBox* GetCheckBox() const;
-		TaskButton* GetButton() const;
+		TaskCheck* GetImportantBox() const { return m_important; }
+		TaskButton* GetButton() const { return m_taskButton; }
+		wxCheckBox* GetCheckBox() const { return m_checkBox; }
 		
 		void AnimateDestroy(std::function<void()> onDone);
 		void UpdateTheme();
 		void PlayCompletedSound();
 
-		//bool GetImportant() const { return m_important->IsChecked(); }
-		//void SetImportant(bool b) { m_important->SetValue(b); }
+		bool GetImportant() const { return m_important->Checked(); }
+		void SetImportant(bool b) { m_important->SetChecked(b); }
 
 	private:
 		wxCheckBox* m_checkBox;

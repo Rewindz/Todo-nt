@@ -268,6 +268,7 @@ namespace ToDont
 					json::object({
 						{"task", casted->GetButton()->GetCurrentLabel().ToStdString()},
 						{"completed", casted->GetCheckBox()->IsChecked()},
+						{"important", casted->GetImportant()},
 						});
 				save["tasks"].push_back(obj);
 			}
@@ -283,6 +284,7 @@ namespace ToDont
 					json::object({
 						{"task", casted->GetButton()->GetCurrentLabel().ToStdString()},
 						{"completed", casted->GetCheckBox()->IsChecked()},
+						{"important", casted->GetImportant()},
 						});
 				save["tasks"].push_back(obj);
 			}
@@ -325,7 +327,7 @@ namespace ToDont
 	{
 		auto data = json::parse(stream);
 		stream.close();
-		if (data["title"].is_string())
+		if (data.contains("title") && data["title"].is_string())
 		{
 			std::string t = data["title"];
 			m_title->SetLabel(t);
@@ -337,18 +339,22 @@ namespace ToDont
 			{
 				if (!task.is_object())continue;
 				std::string task_str;
-				bool completed = false;
+				bool completed = false, important = false;
 
-				if (task["task"].is_string())
+				if (task.contains("task") && task["task"].is_string())
 					task_str = task["task"];
 				else
 					continue;
 
-				if (task["completed"].is_boolean())
+				if (task.contains("completed") && task["completed"].is_boolean())
 					completed = task["completed"];
+
+				if (task.contains("important") && task["important"].is_boolean())
+					important = task["important"];
 
 				auto new_task = new TaskElement(m_scroll, task_str, *m_settings);
 				new_task->GetCheckBox()->SetValue(completed);
+				new_task->SetImportant(important);
 				WireTask(new_task);
 				if (completed) MoveTaskToCompleted(new_task);
 				else MoveTaskToActive(new_task);

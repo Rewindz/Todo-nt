@@ -10,7 +10,7 @@ namespace ToDont
 
 	TaskCheck::TaskCheck(const Settings& settings, wxWindow* parent, wxWindowID id, bool isChecked)
 		: wxControl(),
-		m_checked(isChecked), m_settings(std::move(settings))
+		m_checked(isChecked), m_settings(settings)
 	{
 
 
@@ -23,11 +23,13 @@ namespace ToDont
 			{
 				this->m_hovered = true;
 				Refresh();
+				evt.Skip();
 			});
 		Bind(wxEVT_LEAVE_WINDOW, [this](wxMouseEvent& evt)
 			{
 				this->m_hovered = false;
 				Refresh();
+				evt.Skip();
 			});
 		Bind(wxEVT_LEFT_DOWN, [this](wxMouseEvent& evt)
 			{
@@ -39,6 +41,11 @@ namespace ToDont
 				this->m_active = false;
 				this->m_checked = !this->m_checked;
 				Refresh();
+
+				wxCommandEvent e(wxEVT_CHECKBOX, GetId());
+				e.SetInt(m_checked);
+				e.SetEventObject(this);
+				wxPostEvent(this, e);
 			});
 
 		const int pad = FromDIP(4);
@@ -60,6 +67,7 @@ namespace ToDont
 		dc.SetBrush((m_checked ? brushColour : *wxTRANSPARENT_BRUSH));
 		dc.SetPen(penColour);
 		auto rad = std::min(sz.x, sz.y) / 2 - 2;
+
 		dc.DrawCircle(sz.x / 2, sz.y / 2, rad);
 	}
 }

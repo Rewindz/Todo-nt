@@ -16,6 +16,7 @@ namespace ToDont
 	{
 	public:
 		Settings(std::string filePath = "./settings.json");
+
 		~Settings();
 
 		bool load();

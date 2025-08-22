@@ -101,16 +101,6 @@ namespace ToDont
 		this->SetSizerAndFit(sizer);
 	}
 
-	wxCheckBox* TaskElement::GetCheckBox() const
-	{
-		return m_checkBox;
-	}
-
-	TaskButton* TaskElement::GetButton() const
-	{
-		return m_taskButton;
-	}
-
 	void TaskElement::PlayCompletedSound()
 	{
 		m_completedSound->Play(wxSOUND_ASYNC);
