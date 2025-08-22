@@ -85,10 +85,7 @@ namespace utils
 
 	wxColour wxColourLerp(const wxColour& a, const wxColour& b, float alpha)
 	{
-		RGBi aa(a);
-		RGBi bb(b);
-		RGBi cc = { 255, 255, 255 };
-		return lerp<RGBi>(aa, bb, alpha);
+		return lerp<RGBi>(RGBi(a), RGBi(b), alpha);
 	}
 
 }
