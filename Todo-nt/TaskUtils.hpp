@@ -148,4 +148,6 @@ namespace ToDont
 	
 	std::optional<wxString> GetTaskString(wxWindow* parent, wxString existing);
 	std::optional<wxString> GetTitleString(wxWindow* parent, wxString existing);
+ 
+    void UpdateChildrenThemes(wxSizer* parent, const TaskTheme& theme);
 }

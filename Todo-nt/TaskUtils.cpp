@@ -1,6 +1,8 @@
 #include "TaskUtils.hpp"
+#include "TaskElement.hpp"
 
 #include <wx/textdlg.h>
+
 
 
 namespace ToDont
@@ -91,5 +93,26 @@ namespace ToDont
 			return std::nullopt;
 		}
 		return std::nullopt;
+	}
+
+	void UpdateChildrenThemes(wxSizer* parent, const TaskTheme& theme)
+	{
+		for (auto child : parent->GetChildren())
+		{
+			auto window = child->GetWindow();
+			if (!window) continue;
+			auto element = dynamic_cast<TaskElement*>(window);
+			if (element)
+			{
+				element->UpdateTheme();
+				element->Refresh();
+			}
+			else
+			{
+				window->SetBackgroundColour(theme.bgColor);
+				window->SetForegroundColour(theme.fgColor);
+				window->Refresh();
+			}
+		}
 	}
 }

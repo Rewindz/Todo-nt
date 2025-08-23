@@ -7,7 +7,7 @@
 
 namespace ToDont
 {
-	constexpr long CUSTOM_FRAME_STYLE = wxDEFAULT_FRAME_STYLE & ~(wxMAXIMIZE_BOX | wxRESIZE_BORDER);
+	constexpr long CUSTOM_FRAME_STYLE = wxDEFAULT_FRAME_STYLE & ~(wxMAXIMIZE_BOX);
 	class CustomFrame : public wxFrame
 	{
 	public:

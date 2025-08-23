@@ -8,6 +8,9 @@
 
 #include <ranges>
 
+
+#include "InvisibleScrollWindow.hpp"
+
 namespace ToDont
 {
 	CustomFrame::CustomFrame(wxWindow* parent, wxSize windowSize, Settings& settings)
@@ -23,7 +26,7 @@ namespace ToDont
 		SetForegroundColour(currentTheme.fgColor);
 		m_sizer = new wxBoxSizer(wxVERTICAL);
 		auto* scrollSizer = new wxBoxSizer(wxVERTICAL);
-		auto* scrollBox = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL);
+		auto* scrollBox = new InvisibleScrollWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL);
 		scrollBox->SetScrollRate(0, 10);
 		scrollBox->SetForegroundColour(currentTheme.fgColor);
 		{

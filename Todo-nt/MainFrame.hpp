@@ -13,6 +13,7 @@
 #include "TaskElement.hpp"
 #include "TaskListTitle.hpp"
 #include "Settings.hpp"
+#include "InvisibleScrollWindow.hpp"
 
 namespace ToDont
 {
@@ -48,7 +49,7 @@ namespace ToDont
 
 	private:
 		wxPoint m_dragStart, m_frameStart;
-		wxScrolledWindow* m_scroll;
+		InvisibleScrollWindow* m_scroll;
 		wxFlexGridSizer* m_grid;
 		wxPanel* m_canvas;
 		TaskButton* m_addBtn;
@@ -72,6 +73,7 @@ namespace ToDont
 		void WireTask(TaskElement* t);
 		void MoveTaskToActive(TaskElement* t);
 		void MoveTaskToCompleted(TaskElement* t);
+		void SettingsUpdated();
 
 	};
 }

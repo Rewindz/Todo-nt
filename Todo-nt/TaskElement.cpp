@@ -60,6 +60,7 @@ namespace ToDont
 							{
 								auto* parent = GetParent();
 								parent->GetSizer()->Detach(this);
+								parent->FitInside();
 								parent->Layout();
 							});
 						

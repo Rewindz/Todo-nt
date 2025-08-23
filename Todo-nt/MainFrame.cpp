@@ -2,6 +2,7 @@
 #include "TaskUtils.hpp"
 #include "SettingsFrame.hpp"
 #include "TaskDropTarget.hpp"
+#include "utils.hpp"
 
 using json = nlohmann::json;
 namespace ToDont
@@ -17,6 +18,7 @@ namespace ToDont
 		Bind(wxEVT_MOTION, &MainFrame::OnMouseMove, this);
 		Bind(wxEVT_CHAR_HOOK, &MainFrame::OnKeyDown, this);
 
+		// On Window Close
 		Bind(wxEVT_CLOSE_WINDOW, [this](wxCloseEvent& event)
 			{
 				this->m_settings->SetLastOpen(m_workingFile);
@@ -27,6 +29,7 @@ namespace ToDont
 				event.Skip();
 			});
 
+		// Context Menu
 		Bind(wxEVT_CONTEXT_MENU, [this](wxContextMenuEvent& event)
 			{
 				int id_quit = wxWindow::NewControlId();
@@ -53,6 +56,7 @@ namespace ToDont
 						m_workingFile = "";
 						ClearGridOfElements();
 						m_title->SetLabel("Title");
+						m_scroll->FitInside();
 					}, id_new);
 				Bind(wxEVT_MENU, [this](wxCommandEvent& event)
 					{
@@ -83,14 +87,15 @@ namespace ToDont
 				PopupMenu(&menu);
 			});
 			
+
+
 		SetBackgroundColour(m_settings->GetTheme().bgColor);
 		if (m_settings->GetOntop())
 			SetWindowStyleFlag(GetWindowStyleFlag() | wxSTAY_ON_TOP);
 
 		m_box = new wxBoxSizer(wxVERTICAL);
 		m_grid = new wxFlexGridSizer(0, 1, 2, 10);
-		m_scroll = new wxScrolledWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL);
-		m_scroll->ShowScrollbars(wxSHOW_SB_NEVER, wxSHOW_SB_NEVER);
+		m_scroll = new InvisibleScrollWindow(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxVSCROLL);
 		m_scroll->SetScrollRate(0, 10);
 		m_canvas = new wxPanel(m_scroll);
 		m_grid->AddGrowableCol(0);
@@ -150,9 +155,7 @@ namespace ToDont
 			paneBox->AddSpacer(4);
 			paneBox->Add(m_completedSizer, 0, wxEXPAND | wxLEFT | wxRIGHT, 4);
 			pane->SetSizer(paneBox);
-		}
-
-		m_completedPane->Bind(wxEVT_COLLAPSIBLEPANE_CHANGED, [this](wxCollapsiblePaneEvent&)
+			m_completedPane->Bind(wxEVT_COLLAPSIBLEPANE_CHANGED, [this](wxCollapsiblePaneEvent&)
 			{
 				CallAfter([this] {
 					if (m_completedPane) m_completedPane->GetPane()->Layout();
@@ -163,6 +166,7 @@ namespace ToDont
 					Refresh(false);
 				});
 			});
+		}
 
 
 		auto* scrollBox = new wxBoxSizer(wxVERTICAL);
@@ -178,62 +182,8 @@ namespace ToDont
 		m_box->Add(line, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 5);
 		m_box->Add(m_scroll, 1, wxEXPAND);
 
-		m_settings->SetUpdatedCallback([this]()
-			{
-				auto theme = this->m_settings->GetTheme();
-				// TODO: TaskElement needs fixing for this
-				// ^ I forget what this was suppose to mean ^
-				for (auto child : m_grid->GetChildren())
-				{
-					auto window = child->GetWindow();
-					if (!window) continue;
-					auto element = dynamic_cast<TaskElement*>(window);
-					if (element)
-					{
-						element->UpdateTheme();
-						element->Refresh();
-					}
-					else
-					{
-						window->SetBackgroundColour(theme.bgColor);
-						window->SetForegroundColour(theme.fgColor);
-						window->Refresh();
-					}
-				}
-				for (auto child : m_completedSizer->GetChildren())
-				{
-					auto window = child->GetWindow();
-					if (!window) continue;
-					auto element = dynamic_cast<TaskElement*>(window);
-					if (element)
-					{
-						element->UpdateTheme();
-						element->Refresh();
-					}
-				}
-				for (auto* child : m_completedPane->GetChildren())
-				{
-					if (child != m_completedPane->GetPane())
-					{
-						child->SetForegroundColour(theme.fgColor);
-						child->Refresh();
-					}
-				}
-				for (auto child : m_box->GetChildren())
-				{
-					auto window = child->GetWindow();
-					if (!window) continue;
-					window->SetBackgroundColour(theme.bgColor);
-					window->SetForegroundColour(theme.fgColor);
-					window->Refresh();
-				}
-				this->m_addBtn->SetTheme(theme);
-				this->m_addBtn->Refresh();
-				this->SetBackgroundColour(theme.bgColor);
-				this->SetForegroundColour(theme.fgColor);
-				this->Refresh();
-				Layout();
-			});
+
+		m_settings->SetUpdatedCallback(std::bind(&MainFrame::SettingsUpdated, this));
 
 		auto lastOpen = m_settings->GetLastOpen();
 		if (m_settings->GetShouldOpenLast() && lastOpen.has_value())
@@ -582,6 +532,29 @@ namespace ToDont
 		m_scroll->FitInside();
 
 
+		Layout();
+	}
+
+	void MainFrame::SettingsUpdated()
+	{
+		auto theme = this->m_settings->GetTheme();
+		UpdateChildrenThemes(m_grid, theme);
+		UpdateChildrenThemes(m_completedSizer, theme);
+		UpdateChildrenThemes(m_box, theme);
+
+		for (auto* child : m_completedPane->GetChildren())
+		{
+			if (child != m_completedPane->GetPane())
+			{
+				child->SetForegroundColour(theme.fgColor);
+				child->Refresh();
+			}
+		}
+		this->m_addBtn->SetTheme(theme);
+		this->m_addBtn->Refresh();
+		this->SetBackgroundColour(theme.bgColor);
+		this->SetForegroundColour(theme.fgColor);
+		this->Refresh();
 		Layout();
 	}
 

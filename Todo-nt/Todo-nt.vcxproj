@@ -156,6 +156,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CustomFrame.cpp" />
+    <ClCompile Include="InvisibleScrollWindow.hpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainFrame.cpp" />
     <ClCompile Include="Settings.cpp" />

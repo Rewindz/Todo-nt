@@ -1,6 +1,10 @@
 #pragma once
 #include <wx/colour.h>
+#include <wx/scrolwin.h>
 #include <algorithm>
+#include <iostream>
+
+
 
 namespace utils
 {
@@ -78,14 +82,15 @@ namespace utils
 	};
 
 	template<typename T>
-	T lerp(const T& a, const T& b, float alpha)
+	inline T lerp(const T& a, const T& b, float alpha)
 	{
 		return a + (b - a) * alpha;
 	}
 
-	wxColour wxColourLerp(const wxColour& a, const wxColour& b, float alpha)
+	inline wxColour wxColourLerp(const wxColour& a, const wxColour& b, float alpha)
 	{
 		return lerp<RGBi>(RGBi(a), RGBi(b), alpha);
 	}
+
 
 }

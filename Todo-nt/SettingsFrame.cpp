@@ -56,11 +56,23 @@ namespace ToDont
 					auto theme = this->m_settings.GetTheme();
 					this->SetBackgroundColour(theme.bgColor);
 					this->SetForegroundColour(theme.fgColor);
-					for (auto item : this->GetSizer()->GetChildren())
+					for (auto* item : this->GetSizer()->GetChildren())
 					{
-						auto window = item->GetWindow();
+						if (item->IsSizer())
+						{
+							for (auto* i : item->GetSizer()->GetChildren())
+							{
+								auto wind = i->GetWindow();
+								if (!wind) continue;
+								wind->SetForegroundColour(theme.fgColor);
+								wind->SetBackgroundColour(theme.bgColor);
+							}
+							continue;
+						}
+
+						auto* window = item->GetWindow();
 						if (!window)continue;
-						auto btn = dynamic_cast<TaskButton*>(window);
+						auto* btn = dynamic_cast<TaskButton*>(window);
 						if (btn)
 							btn->SetTheme(theme);
 						else 
@@ -207,7 +219,7 @@ namespace ToDont
 			openCustom->SetTheme(m_settings.GetTheme());
 			openCustom->Bind(wxEVT_BUTTON, [this](wxCommandEvent& event) 
 				{
-					auto* custom = new CustomFrame(this, this->GetSize() * 2, m_settings);
+					auto* custom = new CustomFrame(this, {300, 600}, m_settings);
 					custom->CenterOnScreen();
 					custom->Show();
 				});
